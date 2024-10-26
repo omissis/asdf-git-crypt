@@ -38,7 +38,31 @@ download_release() {
 	version="$1"
 	filename="$2"
 
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	os="$(uname)"
+	arch="$(uname -m)"
+	url=""
+
+	if [[ "$os" == "Darwin" ]]; then
+		echo "Unsupported os: $os. Use homebrew instead."
+		exit 1
+	elif [[ "$os" == "Linux" ]]; then
+		if [ "$arch" == "x86_64" ]; then
+			url="$GH_REPO/releases/download/${version}/git-crypt-${version}-linux-$(uname -m)"
+		else
+			echo "Unsupported os/arch combination: $os/$arch. Use homebrew instead."
+			exit 1
+		fi
+	elif [[ "$os" == "Windows" ]]; then
+		if [ "$arch" == "x86_64" ]; then
+			url="$GH_REPO/releases/download/${version}/git-crypt-${version}-$(uname -m).exe"
+		else
+			echo "Unsupported os/arch combination: $os/$arch."
+			exit 1
+		fi
+	else
+		echo "Unsupported os: $os."
+		exit 1
+	fi
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
